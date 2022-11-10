@@ -1,11 +1,12 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/fs.h>
+#include <linux/slab.h>
 #include <linux/cdev.h>
 
 #include "include/common.h"
 
-static struct cdev chr_dev;
+static struct cdev *chr_dev;
 static dev_t ndev;
 
 
@@ -43,11 +44,17 @@ static __init int char_init(void)
 		printk("alloc_chrdev_region failed!\n");
 		return ret;
 	}
-
 	printk("init():major = %d, minor = %d\n", MAJOR(ndev), MINOR(ndev));
 
-	cdev_init(&chr_dev, &chr_ops);
-	ret = cdev_add(&chr_dev, ndev, 1);
+	chr_dev = kzalloc(sizeof(struct cdev), GFP_KERNEL);
+	if(NULL == chr_dev){
+		printk("kzalloc cdev failed!\n");
+		goto err_alloc_cdev;
+	}
+
+	cdev_init(chr_dev, &chr_ops);
+
+	ret = cdev_add(chr_dev, ndev, 1);
 	if(ret < 0){
 		printk("cdev_add error!\n");
 		goto err_cdev_add;
@@ -57,15 +64,21 @@ static __init int char_init(void)
 	return 0;
 
 err_cdev_add:
+	kfree(chr_dev);
+
+err_alloc_cdev:
 	unregister_chrdev_region(ndev, 1);
+
+	printk("create char driver failed!\n");
 	return -1;
 }
 
 static __exit void char_exit(void)
 {
-	printk("exit char driver success!\n");
-	cdev_del(&chr_dev);
 	unregister_chrdev_region(ndev, 1);
+	cdev_del(chr_dev);
+	kfree(chr_dev);
+	printk("exit char driver success!\n");
 }
 
 
