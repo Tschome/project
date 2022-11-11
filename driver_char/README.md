@@ -1,4 +1,6 @@
-char.c文件
+# 虚拟字符设备编写及测试
+
+##### char.c文件
 
 ```c
 #include <linux/module.h>
@@ -96,7 +98,7 @@ MODULE_DESCRIPTION("char driver demo");
 
 ```
 
-Makefile:
+##### Makefile:
 
 ```makefile
 #交叉编译器配置
@@ -126,9 +128,71 @@ clean:
 
 ```
 
+##### 应用程序
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#define CHR_DEV_NAME "/dev/chr_dev"
+
+int main()
+{
+
+    int ret = 0;
+    char buf[32];
+    int fd = 0;
+
+    fd = open(CHR_DEV_NAME, O_RDONLY);
+    if(fd < 0)
+    {   
+        printf("open file '%s' failed!\n", CHR_DEV_NAME);
+        return -1; 
+    }   
+
+    read(fd, buf, 32);
+    close(fd);
+
+    return 0;
+}
+```
+
+###### 编译app上层应用程序
+    XX-linux-gcc app_char.c -o app_char
 
 
-### struct file_operateions
+###### 测试程序
+- 加载驱动
+    ```c
+    insmod char_demo.ko
+    ```
+
+    ==>界面会打印major和minor值,例如他们的值为:250, 0
+
+- 创建设备节点
+    ```c
+    mknod /dev/chr_dev c 250 0
+    ```
+
+- 执行应用程序
+    ```c
+    ./app_char
+    ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### struct file_operateions
 
 ```c
 struct file_operations {
@@ -180,7 +244,7 @@ struct file_operations {
 
 
 
-### 字符设备的内核抽象
+#### 字符设备的内核抽象
 
 ```c
 struct cdev {
@@ -252,7 +316,13 @@ void unregister_chrdev_region(dev_t first, unsigned int count);
 
 #### 设备文件节点的生成
 
+Linux系统所有的设备文件都位于 /dev 目录下.当Linux内核在挂载完根文件系统后,会在这个根文件系统 /dev 目录上重新挂载一个芯的文件系统 devtmpfs.
 
+在 /dev 目录下用 mknod命令来创建一个新的设备文件节点 demodev , 对应的驱动程序使用的设备主设备号为2, 次设备号为0,命令如下:
+
+```shell
+mknod /dev/demodev c 2 0
+```
 
 
 
