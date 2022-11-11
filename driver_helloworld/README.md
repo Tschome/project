@@ -1,4 +1,4 @@
-### Helloworld入门驱动编写解析
+### 第一个Linux设备驱动HelloWorld编写解析
 
 
 
@@ -83,9 +83,4 @@ clean:
 
 ```
 
-参考:
-
-<linux设备驱动>
-
-<深入Linux 设备驱动程序内核机制>
 
