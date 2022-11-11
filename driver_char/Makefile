@@ -1,4 +1,4 @@
-CROSS_COMPILE ?= mips-v720s229-linux-gnu-
+CROSS_COMPILE ?= XXX-linux-gnu-
 
 ENV_KERNEL_DIR ?= $(PWD)/../../kernel
 KDIR := ${ENV_KERNEL_DIR}
